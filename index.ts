@@ -19,8 +19,8 @@ const opts = nomnom
   .option('version', {
     flag: true,
     help: 'Print version and exit',
-    callback: function() {
-      return "version 0.0.1";
+    callback: function () {
+      return "0.0.1";
     }
   })
   .option('verbose', {
@@ -48,7 +48,6 @@ const opts = nomnom
     }
   })
   .parse();
-
 
 
 // import * as blinkstick from 'blinkstick';
@@ -157,7 +156,7 @@ function callUrl() {
 
   }).on("error", (err: any) => {
     execution.requestWaiting = false;
-    currPut("Error: " + err.message);
+    currPut(chalk.red("Error: " + err.message));
   });
 }
 
@@ -184,7 +183,6 @@ function startWatch() {
 init();
 startWatch();
 
-
-process.on('exit', function(code) {
+process.on('exit', function (code) {
   return puts(`About to exit with code ${code}`);
 });
