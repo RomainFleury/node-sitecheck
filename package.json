@@ -1,0 +1,37 @@
+{
+  "name": "node-sitecheck-master",
+  "version": "0.0.1",
+  "description": "Reflects an url/site status",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RomainFleury/node-sitecheck.git"
+  },
+  "keywords": [
+    "BlinkStick",
+    "Node",
+    "Site",
+    "Status"
+  ],
+  "author": "Romain Fleury",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RomainFleury/node-sitecheck/issues"
+  },
+  "homepage": "https://github.com/RomainFleury/node-sitecheck#readme",
+  "dependencies": {
+    "chalk": "^2.4.0",
+    "nomnom": "^1.8.1",
+    "uniqid": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^9.6.6",
+    "@types/nomnom": "0.0.28",
+    "typescript": "^2.8.3"
+  }
+}

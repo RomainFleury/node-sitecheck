@@ -1,0 +1,25 @@
+{
+  "plugins": [
+    "node"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "standard",
+    "plugin:import/errors"
+  ],
+  "env": {
+    "es6": true
+  },
+  "rules": {
+    "node/exports-style": [
+      "error",
+      "module.exports"
+    ],
+    "space-before-function-paren": [
+      "error",
+      "never"
+    ],
+    "node/no-unpublished-import": ["error"]
+  }
+}

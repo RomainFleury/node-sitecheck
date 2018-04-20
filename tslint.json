@@ -1,0 +1,120 @@
+{
+  "extends": [
+    "tslint-react"
+  ],
+  "rulesDirectory": [
+    "node_modules/tslint-eslint-rules/dist/rules",
+    "node_modules/tslint-microsoft-contrib",
+    "rule"
+  ],
+  "defaultSeverity": "error",
+  "rules": {
+    "jsx-alignment": true,
+    "jsx-curly-spacing": [
+      true,
+      "never"
+    ],
+    "jsx-no-lambda": true,
+    "jsx-no-multiline-js": true,
+    "jsx-no-string-ref": true,
+    "jsx-self-close": true,
+    "jsx-wrap-multiline": true,
+    "class-name": true,
+    "comment-format": [
+      true,
+      "check-space"
+    ],
+    "jsdoc-format": true,
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "ter-indent": [
+      true,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "no-consecutive-blank-lines": [
+      true,
+      2
+    ],
+    "no-var-keyword": true,
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "semicolon": [
+      true,
+      "always",
+      "ignore-bound-class-methods"
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-module",
+      "check-separator",
+      "check-type"
+    ],
+    "typedef-whitespace": [
+      true,
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
+      }
+    ],
+    "no-internal-module": true,
+    "no-trailing-whitespace": true,
+    "no-inferrable-types": [
+      true
+    ],
+    "no-null-keyword": true,
+    "prefer-const": true,
+    "no-increment-decrement": true,
+    "ext-variable-name": [
+      false,
+      [
+        "class",
+        "pascal"
+      ],
+      [
+        "interface",
+        "pascal",
+        {
+          "regex": "^I.*$"
+        }
+      ],
+      [
+        "parameter",
+        "camel"
+      ],
+      [
+        "function",
+        "camel"
+      ],
+      [
+        "default",
+        "camel"
+      ]
+    ],
+    "match-default-export-name": true,
+    "no-uppercase-in-imports": true,
+    "no-duplicate-imports": true,
+  }
+}
