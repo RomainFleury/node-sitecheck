@@ -47,26 +47,6 @@ var opts = nomnom
     }
 })
     .parse();
-// import * as blinkstick from 'blinkstick';
-// https://github.com/arvydas/blinkstick-node/wiki
-//
-// "usb": "^1.3.0",
-// "blinkstick": "^1.1.3",
-//
-// const device = blinkstick.findFirst();
-// var leds = blinkstick.findAll();
-// leds.array.forEach((led: any) => {
-//   led.blink('random', function() {
-//     led.pulse('random', function() {
-//       led.setColor('red', function() {
-//       });
-//     });
-//   });
-// });
-// const leds: any[] = [];
-// export function checkSite(siteUrl: string) {
-//   return leds;
-// }
 var url = new urlHelper.URL(opts.url);
 var interval = opts.interval ? opts.interval : defaultConfig.interval;
 var separator = "|";
@@ -175,4 +155,55 @@ init();
 startWatch();
 process.on('exit', function (code) {
     return puts("About to exit with code " + code);
+});
+//// SPECIFIC BLINKSTICK
+var blinkstick = require('blinkstick');
+// https://github.com/arvydas/blinkstick-node/wiki
+//
+// "usb": "^1.3.0",
+// "blinkstick": "^1.1.3",
+//
+// const device = blinkstick.findFirst();
+function getLeds() {
+    return blinkstick.findAll();
+}
+var leds = getLeds();
+puts("leds", leds);
+// rgb is a '#RRGGBB' string
+// red/green/blue are each numbers in [0..255]
+// function is optional
+var rgb = '#RRGGBB';
+var red = 40;
+var green = 40;
+var blue = 40;
+leds.forEach(function (led) {
+    led.setColor(rgb, function () { });
+    led.setColor(red, green, blue, function () { });
+    led.setColor('random', function () { });
+    // //All color parameters and options work on these functions too
+    // led.pulse(rgb, function() { /* called when color animation is complete */ });
+    // led.blink(rgb, function() { /* called when color animation is complete */ });
+    // led.morph(rgb, function() { /* called when color animation is complete */ });
+    led.turnOff(); // i.e., setColor(0, 0, 0)
+});
+// leds.array.forEach((led: any) => {
+//   led.blink('random', function() {
+//     led.pulse('random', function() {
+//       led.setColor('red', function() {
+//       });
+//     });
+//   });
+// });
+// const leds: any[] = [];
+// led.getColor(function(red, green, blue) { ... });
+// led.getColorString(function(rgb) { ... });
+function turnAllLedsOff() {
+    blinkstick.findAll().forEach(function (led) {
+        led.turnOff(); // i.e., setColor(0, 0, 0)
+    });
+}
+;
+process.on('exit', function (code) {
+    puts("Turn leds off");
+    return turnAllLedsOff();
 });
