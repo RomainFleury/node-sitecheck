@@ -4,6 +4,7 @@ const http = require("http");
 const https = require("https");
 const chalk = require('chalk');
 const uniqid = require('uniqid');
+const notifier = require('node-notifier');
 
 const defaultConfig = {
   url: "http://localhost:3000/",
@@ -89,6 +90,53 @@ var execution = {
   }
 };
 
+interface ExecutionData {
+  averageResponseTime: number;
+  currentDuration: number;
+  lastExecution?: ExecutionInfo;
+  requestWaiting: boolean;
+  executions: ExecutionInfo[];
+}
+
+interface ExecutionInfo {
+  errors: number;
+  success: number;
+  id: string;
+  totalDuration: number;
+  startedAt: string;
+}
+
+class ExecutionState {
+  status: ExecutionData;
+  constructor() {
+    this.status = this.newStatus();
+    return this;
+  }
+
+  newStatus = (): ExecutionData => ({
+    averageResponseTime: 0,
+    currentDuration: 0,
+    requestWaiting: false,
+    executions: []
+  })
+}
+
+class Execution {
+  url: typeof urlHelper.URL;
+  options: typeof opts;
+  status: ExecutionData;
+
+  constructor(url: typeof urlHelper.URL, options: typeof opts) {
+    this.options = options;
+  }
+}
+
+// (var Execution = new  = function ;
+// Execution.prototype
+//   this.status = "";
+//   this.prototype.
+// })();
+
 function prefix(id?: string) {
   const now = new Date();
   return `${now.toISOString()}${separator}${id ? id + separator : ""}`
@@ -101,6 +149,16 @@ function verbose(...params: any[]) {
 function puts(...params: any[]) {
   console.log(prefix(), ...params);
 }
+
+const LEVEL_ERROR = "error";
+
+function notify(message: { message: string, title?: string }, level?: string, logMethod?: Function) {
+  notifier.notify(message);
+  if (level === LEVEL_ERROR && logMethod) {
+    logMethod(chalk.red(message.message));
+  }
+};
+
 
 function callUrl() {
   const currentId = uniqid();
@@ -156,7 +214,11 @@ function callUrl() {
 
   }).on("error", (err: any) => {
     execution.requestWaiting = false;
-    currPut(chalk.red("Error: " + err.message));
+    const message = {
+      title: `${url.hostname} is down`,
+      message: "Error: " + err.message
+    }
+    notify(message, LEVEL_ERROR, currPut);
   });
 }
 
