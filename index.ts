@@ -1,15 +1,14 @@
-import { verbose, prefix, notify, puts } from "./utils";
-
-const nomnom: NomnomInternal.Parser = require("nomnom");
-const urlHelper = require("url");
+const chalk = require('chalk');
 const http = require("http");
 const https = require("https");
-const chalk = require('chalk');
+const nomnom: NomnomInternal.Parser = require("nomnom");
+const notifier = require('node-notifier');
 const uniqid = require('uniqid');
+const urlHelper = require("url");
+
 
 const defaultConfig = {
-  url: "http://localhost:3000/",
-  interval: 1
+  interval: 1,
 }
 
 const opts = nomnom
@@ -56,13 +55,43 @@ const url = new urlHelper.URL(opts.url);
 const interval = opts.interval ? opts.interval : defaultConfig.interval;
 const separator = "|";
 
+
+/// UTILS
+
+function prefix(id?: string) {
+  const now = new Date();
+  return `${now.toISOString()}${separator}${id ? id + separator : ""}`
+}
+
+function verbose(...params: any[]) {
+  opts.verbose ? console.log(...params) : undefined;
+}
+
+function puts(...params: any[]) {
+  console.log(prefix(), ...params);
+}
+
+function notify(message: { message: string, title?: string }, level?: string, logMethod?: Function) {
+  notifier.notify(message);
+  if (logMethod) {
+    switch (level) {
+      case "red":
+        logMethod(chalk.red(message.message));
+        break;
+      default:
+        logMethod(chalk.yellow(message.message));
+        break;
+    }
+  }
+};
+
+
+///
+
+
 // create execution data
 var execution = {
   requestWaiting: false,
-  currentDuration: 0,
-  lastExecution: {
-    duration: 0
-  }
 };
 
 function callUrl() {
@@ -79,8 +108,6 @@ function callUrl() {
   // set requestWaiting to true
   execution.requestWaiting = true;
 
-  // console.log("URL data : ", url);
-
   (url.https ? https : http).get({
     href: url.href,
     port: url.port,
@@ -90,7 +117,8 @@ function callUrl() {
     }
   }, (resp: any) => {
     let data = '';
-    currBose("init data");
+    currBose("Get Start");
+    currBose(`Status Code : ${resp.statusCode}`);
     currBose(`HEADERS: ${JSON.stringify(resp.headers)}`);
 
     // A chunk of data has been recieved.
@@ -123,14 +151,8 @@ function callUrl() {
       title: `${url.hostname} is down`,
       message: "Error: " + err.message
     }
-    notify(message, "error", currPut);
+    notify(message, "red", currPut);
   });
-}
-
-
-function init() {
-  // avoid call while request is in progress
-  execution.requestWaiting = false;
 }
 
 function startWatch() {
@@ -147,7 +169,6 @@ function startWatch() {
   }
 }
 
-init();
 startWatch();
 
 process.on('exit', function (code) {
