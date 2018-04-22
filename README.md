@@ -10,8 +10,13 @@ A node script that lights up blinkstick when a checked url is too slow or fails 
 
 `node dist/index.js -u http://localhost:3000/`
 
-# Dev help :
+# Documentations :
 https://www.blinkstick.com/help/api-implementations
+
 https://github.com/arvydas/blinkstick-node
+
 https://github.com/harthur/nomnom
-https://blog.risingstack.com/node-hero-tutorial-getting-started-with-node-js/
+
+https://www.npmjs.com/package/uniqid
+
+https://github.com/mikaelbr/node-notifier
