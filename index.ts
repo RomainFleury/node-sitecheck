@@ -7,8 +7,7 @@ const uniqid = require('uniqid');
 const notifier = require('node-notifier');
 
 const defaultConfig = {
-  url: "http://localhost:3000/",
-  interval: 1
+  interval: 1,
 }
 
 const opts = nomnom
