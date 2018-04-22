@@ -51,32 +51,6 @@ const opts = nomnom
   .parse();
 
 
-// import * as blinkstick from 'blinkstick';
-// https://github.com/arvydas/blinkstick-node/wiki
-//
-// "usb": "^1.3.0",
-// "blinkstick": "^1.1.3",
-//
-// const device = blinkstick.findFirst();
-
-
-// var leds = blinkstick.findAll();
-
-// leds.array.forEach((led: any) => {
-//   led.blink('random', function() {
-//     led.pulse('random', function() {
-//       led.setColor('red', function() {
-//       });
-//     });
-//   });
-// });
-// const leds: any[] = [];
-
-// export function checkSite(siteUrl: string) {
-//   return leds;
-// }
-
-
 const url = new urlHelper.URL(opts.url);
 const interval = opts.interval ? opts.interval : defaultConfig.interval;
 const separator = "|";
@@ -84,58 +58,8 @@ const separator = "|";
 // create execution data
 var execution = {
   requestWaiting: false,
-  currentDuration: 0,
-  lastExecution: {
-    duration: 0
-  }
 };
 
-interface ExecutionData {
-  averageResponseTime: number;
-  currentDuration: number;
-  lastExecution?: ExecutionInfo;
-  requestWaiting: boolean;
-  executions: ExecutionInfo[];
-}
-
-interface ExecutionInfo {
-  errors: number;
-  success: number;
-  id: string;
-  totalDuration: number;
-  startedAt: string;
-}
-
-class ExecutionState {
-  status: ExecutionData;
-  constructor() {
-    this.status = this.newStatus();
-    return this;
-  }
-
-  newStatus = (): ExecutionData => ({
-    averageResponseTime: 0,
-    currentDuration: 0,
-    requestWaiting: false,
-    executions: []
-  })
-}
-
-class Execution {
-  url: typeof urlHelper.URL;
-  options: typeof opts;
-  status: ExecutionData;
-
-  constructor(url: typeof urlHelper.URL, options: typeof opts) {
-    this.options = options;
-  }
-}
-
-// (var Execution = new  = function ;
-// Execution.prototype
-//   this.status = "";
-//   this.prototype.
-// })();
 
 function prefix(id?: string) {
   const now = new Date();
@@ -150,12 +74,17 @@ function puts(...params: any[]) {
   console.log(prefix(), ...params);
 }
 
-const LEVEL_ERROR = "error";
-
 function notify(message: { message: string, title?: string }, level?: string, logMethod?: Function) {
   notifier.notify(message);
-  if (level === LEVEL_ERROR && logMethod) {
-    logMethod(chalk.red(message.message));
+  if (logMethod) {
+    switch (level) {
+      case "red":
+        logMethod(chalk.red(message.message));
+        break;
+      default:
+        logMethod(chalk.yellow(message.message));
+        break;
+    }
   }
 };
 
@@ -174,8 +103,6 @@ function callUrl() {
   // set requestWaiting to true
   execution.requestWaiting = true;
 
-  // console.log("URL data : ", url);
-
   (url.https ? https : http).get({
     href: url.href,
     port: url.port,
@@ -185,7 +112,8 @@ function callUrl() {
     }
   }, (resp: any) => {
     let data = '';
-    currBose("init data");
+    currBose("Get Start");
+    currBose(`Status Code : ${resp.statusCode}`);
     currBose(`HEADERS: ${JSON.stringify(resp.headers)}`);
 
     // A chunk of data has been recieved.
@@ -218,14 +146,8 @@ function callUrl() {
       title: `${url.hostname} is down`,
       message: "Error: " + err.message
     }
-    notify(message, LEVEL_ERROR, currPut);
+    notify(message, "red", currPut);
   });
-}
-
-
-function init() {
-  // avoid call while request is in progress
-  execution.requestWaiting = false;
 }
 
 function startWatch() {
@@ -242,7 +164,6 @@ function startWatch() {
   }
 }
 
-init();
 startWatch();
 
 process.on('exit', function (code) {
