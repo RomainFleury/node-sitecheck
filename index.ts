@@ -4,10 +4,10 @@ const http = require("http");
 const https = require("https");
 const chalk = require('chalk');
 const uniqid = require('uniqid');
+const notifier = require('node-notifier');
 
 const defaultConfig = {
-  url: "http://localhost:3000/",
-  interval: 1
+  interval: 1,
 }
 
 const opts = nomnom
@@ -50,8 +50,6 @@ const opts = nomnom
   .parse();
 
 
-
-
 const url = new urlHelper.URL(opts.url);
 const interval = opts.interval ? opts.interval : defaultConfig.interval;
 const separator = "|";
@@ -59,11 +57,8 @@ const separator = "|";
 // create execution data
 var execution = {
   requestWaiting: false,
-  currentDuration: 0,
-  lastExecution: {
-    duration: 0
-  }
 };
+
 
 function prefix(id?: string) {
   const now = new Date();
@@ -77,6 +72,21 @@ function verbose(...params: any[]) {
 function puts(...params: any[]) {
   console.log(prefix(), ...params);
 }
+
+function notify(message: { message: string, title?: string }, level?: string, logMethod?: Function) {
+  notifier.notify(message);
+  if (logMethod) {
+    switch (level) {
+      case "red":
+        logMethod(chalk.red(message.message));
+        break;
+      default:
+        logMethod(chalk.yellow(message.message));
+        break;
+    }
+  }
+};
+
 
 function callUrl() {
   const currentId = uniqid();
@@ -92,8 +102,6 @@ function callUrl() {
   // set requestWaiting to true
   execution.requestWaiting = true;
 
-  // console.log("URL data : ", url);
-
   (url.https ? https : http).get({
     href: url.href,
     port: url.port,
@@ -103,7 +111,8 @@ function callUrl() {
     }
   }, (resp: any) => {
     let data = '';
-    currBose("init data");
+    currBose("Get Start");
+    currBose(`Status Code : ${resp.statusCode}`);
     currBose(`HEADERS: ${JSON.stringify(resp.headers)}`);
 
     // A chunk of data has been recieved.
@@ -132,14 +141,12 @@ function callUrl() {
 
   }).on("error", (err: any) => {
     execution.requestWaiting = false;
-    currPut(chalk.red("Error: " + err.message));
+    const message = {
+      title: `${url.hostname} is down`,
+      message: "Error: " + err.message
+    }
+    notify(message, "red", currPut);
   });
-}
-
-
-function init() {
-  // avoid call while request is in progress
-  execution.requestWaiting = false;
 }
 
 function startWatch() {
@@ -156,7 +163,6 @@ function startWatch() {
   }
 }
 
-init();
 startWatch();
 
 process.on('exit', function (code) {

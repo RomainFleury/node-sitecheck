@@ -5,6 +5,7 @@ var http = require("http");
 var https = require("https");
 var chalk = require('chalk');
 var uniqid = require('uniqid');
+var notifier = require('node-notifier');
 var defaultConfig = {
     url: "http://localhost:3000/",
     interval: 1
@@ -76,6 +77,14 @@ function puts() {
     }
     console.log.apply(console, [prefix()].concat(params));
 }
+var LEVEL_ERROR = "error";
+function notify(message, level, logMethod) {
+    notifier.notify(message);
+    if (level === LEVEL_ERROR && logMethod) {
+        logMethod(chalk.red(message.message));
+    }
+}
+;
 function callUrl() {
     var currentId = uniqid();
     function currBose() {
@@ -130,7 +139,11 @@ function callUrl() {
         }
     }).on("error", function (err) {
         execution.requestWaiting = false;
-        currPut(chalk.red("Error: " + err.message));
+        var message = {
+            title: url.hostname + " is down",
+            message: "Error: " + err.message
+        };
+        notify(message, LEVEL_ERROR, currPut);
     });
 }
 function init() {
