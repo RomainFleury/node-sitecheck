@@ -7,8 +7,7 @@ var chalk = require('chalk');
 var uniqid = require('uniqid');
 var notifier = require('node-notifier');
 var defaultConfig = {
-    url: "http://localhost:3000/",
-    interval: 1
+    interval: 1,
 };
 var opts = nomnom
     .option('debug', {
@@ -54,10 +53,6 @@ var separator = "|";
 // create execution data
 var execution = {
     requestWaiting: false,
-    currentDuration: 0,
-    lastExecution: {
-        duration: 0
-    }
 };
 function prefix(id) {
     var now = new Date();
@@ -77,11 +72,20 @@ function puts() {
     }
     console.log.apply(console, [prefix()].concat(params));
 }
-var LEVEL_ERROR = "error";
 function notify(message, level, logMethod) {
     notifier.notify(message);
-    if (level === LEVEL_ERROR && logMethod) {
-        logMethod(chalk.red(message.message));
+    if (logMethod) {
+        switch (level) {
+            case "red":
+                updateLedsColors("#FF0000");
+                // updateLedsColors("random");
+                logMethod(chalk.red(message.message));
+                break;
+            default:
+                updateLedsColors("#FFFF00");
+                logMethod(chalk.yellow(message.message));
+                break;
+        }
     }
 }
 ;
@@ -104,7 +108,6 @@ function callUrl() {
     currBose("Call start");
     // set requestWaiting to true
     execution.requestWaiting = true;
-    // console.log("URL data : ", url);
     (url.https ? https : http).get({
         href: url.href,
         port: url.port,
@@ -114,7 +117,8 @@ function callUrl() {
         }
     }, function (resp) {
         var data = '';
-        currBose("init data");
+        currBose("Get Start");
+        currBose("Status Code : " + resp.statusCode);
         currBose("HEADERS: " + JSON.stringify(resp.headers));
         // A chunk of data has been recieved.
         resp.on('data', function (chunk) {
@@ -122,9 +126,11 @@ function callUrl() {
         });
         if (resp.statusCode === 200) {
             currPut(chalk.green("200 ok"));
+            updateLedsColors("#00FF00");
             resp.on('end', function () {
                 execution.requestWaiting = false;
                 currBose(chalk.green("Request finished"));
+                // updateLedsColors("random");
             });
         }
         else {
@@ -143,12 +149,8 @@ function callUrl() {
             title: url.hostname + " is down",
             message: "Error: " + err.message
         };
-        notify(message, LEVEL_ERROR, currPut);
+        notify(message, "red", currPut);
     });
-}
-function init() {
-    // avoid call while request is in progress
-    execution.requestWaiting = false;
 }
 function startWatch() {
     puts(chalk.blue("Start watching [" + url.hostname + "] every " + interval + " minute" + (interval > 1 ? "s" : "")));
@@ -161,10 +163,9 @@ function startWatch() {
             else {
                 callUrl();
             }
-        }, interval * 1000 * 60); //  interval * 1000 * 60
+        }, interval * 1000 * 1); //  interval * 1000 * 60
     }
 }
-init();
 startWatch();
 process.on('exit', function (code) {
     return puts("About to exit with code " + code);
@@ -199,6 +200,19 @@ leds.forEach(function (led) {
     // led.morph(rgb, function() { /* called when color animation is complete */ });
     led.turnOff(); // i.e., setColor(0, 0, 0)
 });
+function updateLedsColors(color) {
+    var leds = getLeds();
+    // puts("leds", leds);
+    if (leds.length) {
+        puts(leds[0].device.deviceAddress);
+    }
+    // color is a '#RRGGBB' string
+    // function is optional
+    // const color = '#RRGGBB';
+    leds.forEach(function (led) {
+        led.setColor(color, function () { });
+    });
+}
 // leds.array.forEach((led: any) => {
 //   led.blink('random', function() {
 //     led.pulse('random', function() {

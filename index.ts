@@ -78,9 +78,11 @@ function notify(message: { message: string, title?: string }, level?: string, lo
   if (logMethod) {
     switch (level) {
       case "red":
+        updateLedsColors("#FF0000");
         logMethod(chalk.red(message.message));
         break;
       default:
+        updateLedsColors("#FFFF00");
         logMethod(chalk.yellow(message.message));
         break;
     }
@@ -122,6 +124,7 @@ function callUrl() {
 
     if (resp.statusCode === 200) {
       currPut(chalk.green("200 ok"));
+      updateLedsColors("#00FF00");
 
       resp.on('end', () => {
         execution.requestWaiting = false;
@@ -159,7 +162,7 @@ function startWatch() {
       } else {
         callUrl();
       }
-    }, interval * 1000 * 60); //  interval * 1000 * 60
+    }, interval * 1000 * 1); //  interval * 1000 * 60
   }
 }
 
@@ -210,6 +213,22 @@ leds.forEach((led: any) => {
 
   led.turnOff();    // i.e., setColor(0, 0, 0)
 });
+
+function updateLedsColors(color: string) {
+  const leds = getLeds();
+
+  // puts("leds", leds);
+  if (leds.length) {
+    puts(leds[0].device.deviceAddress);
+  }
+
+  // color is a '#RRGGBB' string
+  // function is optional
+  // const color = '#RRGGBB';
+  leds.forEach((led: any) => {
+    led.setColor(color, function () { /* called when color is changed */ });
+  });
+}
 
 // leds.array.forEach((led: any) => {
 //   led.blink('random', function() {
