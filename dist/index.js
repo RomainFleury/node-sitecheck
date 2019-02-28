@@ -7,8 +7,7 @@ var chalk = require('chalk');
 var uniqid = require('uniqid');
 var notifier = require('node-notifier');
 var defaultConfig = {
-    url: "http://localhost:3000/",
-    interval: 1
+    interval: 1,
 };
 var opts = nomnom
     .option('debug', {
@@ -48,36 +47,12 @@ var opts = nomnom
     }
 })
     .parse();
-// import * as blinkstick from 'blinkstick';
-// https://github.com/arvydas/blinkstick-node/wiki
-//
-// "usb": "^1.3.0",
-// "blinkstick": "^1.1.3",
-//
-// const device = blinkstick.findFirst();
-// var leds = blinkstick.findAll();
-// leds.array.forEach((led: any) => {
-//   led.blink('random', function() {
-//     led.pulse('random', function() {
-//       led.setColor('red', function() {
-//       });
-//     });
-//   });
-// });
-// const leds: any[] = [];
-// export function checkSite(siteUrl: string) {
-//   return leds;
-// }
 var url = new urlHelper.URL(opts.url);
 var interval = opts.interval ? opts.interval : defaultConfig.interval;
 var separator = "|";
 // create execution data
 var execution = {
     requestWaiting: false,
-    currentDuration: 0,
-    lastExecution: {
-        duration: 0
-    }
 };
 function prefix(id) {
     var now = new Date();
@@ -97,11 +72,17 @@ function puts() {
     }
     console.log.apply(console, [prefix()].concat(params));
 }
-var LEVEL_ERROR = "error";
 function notify(message, level, logMethod) {
     notifier.notify(message);
-    if (level === LEVEL_ERROR && logMethod) {
-        logMethod(chalk.red(message.message));
+    if (logMethod) {
+        switch (level) {
+            case "red":
+                logMethod(chalk.red(message.message));
+                break;
+            default:
+                logMethod(chalk.yellow(message.message));
+                break;
+        }
     }
 }
 ;
@@ -124,7 +105,6 @@ function callUrl() {
     currBose("Call start");
     // set requestWaiting to true
     execution.requestWaiting = true;
-    // console.log("URL data : ", url);
     (url.https ? https : http).get({
         href: url.href,
         port: url.port,
@@ -134,7 +114,8 @@ function callUrl() {
         }
     }, function (resp) {
         var data = '';
-        currBose("init data");
+        currBose("Get Start");
+        currBose("Status Code : " + resp.statusCode);
         currBose("HEADERS: " + JSON.stringify(resp.headers));
         // A chunk of data has been recieved.
         resp.on('data', function (chunk) {
@@ -163,12 +144,8 @@ function callUrl() {
             title: url.hostname + " is down",
             message: "Error: " + err.message
         };
-        notify(message, LEVEL_ERROR, currPut);
+        notify(message, "red", currPut);
     });
-}
-function init() {
-    // avoid call while request is in progress
-    execution.requestWaiting = false;
 }
 function startWatch() {
     puts(chalk.blue("Start watching [" + url.hostname + "] every " + interval + " minute" + (interval > 1 ? "s" : "")));
@@ -184,7 +161,6 @@ function startWatch() {
         }, interval * 1000 * 60); //  interval * 1000 * 60
     }
 }
-init();
 startWatch();
 process.on('exit', function (code) {
     return puts("About to exit with code " + code);
